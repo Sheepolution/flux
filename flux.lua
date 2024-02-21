@@ -128,12 +128,26 @@ function tween:after(...)
   return t
 end
 
+function tween:wait(t, f)
+  local tick = self.parent._tick
+  assert(tick, "No tick set!", 2)
+  local td = tick:delay(t, f)
+  td.paused = true
+  td._flux = self.parent
+  self.g_tick = td
+  return td
+end
+
 function tween:stop()
   flux.remove(self.parent, self)
 end
 
 function flux.group()
   return setmetatable({}, flux)
+end
+
+function flux:tick(lib)
+  self._tick = lib
 end
 
 function flux:to(obj, time, vars)
@@ -164,6 +178,7 @@ function flux:update(deltatime)
       if p >= 1 then
         flux.remove(self, i)
         if t._oncomplete then t._oncomplete() end
+        if t.g_tick then t.g_tick.paused = false end
       end
     end
   end
@@ -182,6 +197,11 @@ function flux:add(tween)
   local obj = tween.obj
   self[obj] = self[obj] or {}
   self[obj][tween] = true
+
+  if self._tick then
+    tween._tick = self._tick
+  end
+
   -- Add to array
   table.insert(self, tween)
   tween.parent = self
