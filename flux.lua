@@ -59,7 +59,10 @@ local function makefsetter(field)
       error("expected function or callable", 2)
     end
     local old = self[field]
-    self[field] = old and function() old() x() end or x
+    self[field] = old and function()
+      old()
+      x()
+    end or x
     return self
   end
 end
@@ -74,15 +77,15 @@ local function makesetter(field, checkfn, errmsg)
   end
 end
 
-tween.ease  = makesetter("_ease",
-                         function(x) return flux.easing[x] end,
-                         "bad easing type '$x'")
-tween.delay = makesetter("_delay",
-                         function(x) return type(x) == "number" end,
-                         "bad delay time; expected number")
-tween.onstart     = makefsetter("_onstart")
-tween.onupdate    = makefsetter("_onupdate")
-tween.oncomplete  = makefsetter("_oncomplete")
+tween.ease       = makesetter("_ease",
+  function(x) return flux.easing[x] end,
+  "bad easing type '$x'")
+tween.delay      = makesetter("_delay",
+  function(x) return type(x) == "number" end,
+  "bad delay time; expected number")
+tween.onstart    = makefsetter("_onstart")
+tween.onupdate   = makefsetter("_onupdate")
+tween.oncomplete = makefsetter("_oncomplete")
 
 
 function tween.new(obj, time, vars)
@@ -102,7 +105,6 @@ function tween.new(obj, time, vars)
   return self
 end
 
-
 function tween:init()
   for k, v in pairs(self.vars) do
     local x = self.obj[k]
@@ -113,7 +115,6 @@ function tween:init()
   end
   self.inited = true
 end
-
 
 function tween:after(...)
   local t
@@ -127,22 +128,17 @@ function tween:after(...)
   return t
 end
 
-
 function tween:stop()
   flux.remove(self.parent, self)
 end
-
-
 
 function flux.group()
   return setmetatable({}, flux)
 end
 
-
 function flux:to(obj, time, vars)
   return flux.add(self, tween.new(obj, time, vars))
 end
-
 
 function flux:update(deltatime)
   for i = #self, 1, -1 do
@@ -173,7 +169,6 @@ function flux:update(deltatime)
   end
 end
 
-
 function flux:clear(obj, vars)
   for t in pairs(self[obj]) do
     if t.inited then
@@ -181,7 +176,6 @@ function flux:clear(obj, vars)
     end
   end
 end
-
 
 function flux:add(tween)
   -- Add to object table, create table if it does not exist
@@ -193,7 +187,6 @@ function flux:add(tween)
   tween.parent = self
   return tween
 end
-
 
 function flux:remove(x)
   if type(x) == "number" then
@@ -212,12 +205,10 @@ function flux:remove(x)
   end
 end
 
-
-
 local bound = {
-  to      = function(...) return flux.to(flux.tweens, ...) end,
-  update  = function(...) return flux.update(flux.tweens, ...) end,
-  remove  = function(...) return flux.remove(flux.tweens, ...) end,
+  to     = function(...) return flux.to(flux.tweens, ...) end,
+  update = function(...) return flux.update(flux.tweens, ...) end,
+  remove = function(...) return flux.remove(flux.tweens, ...) end,
 }
 setmetatable(bound, flux)
 
