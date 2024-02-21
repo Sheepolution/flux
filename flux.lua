@@ -157,28 +157,30 @@ end
 function flux:update(deltatime)
   for i = #self, 1, -1 do
     local t = self[i]
-    if t._delay > 0 then
-      t._delay = t._delay - deltatime
-    else
-      if not t.inited then
-        flux.clear(self, t.obj, t.vars)
-        t:init()
-      end
-      if t._onstart then
-        t._onstart()
-        t._onstart = nil
-      end
-      t.progress = t.progress + t.rate * deltatime
-      local p = t.progress
-      local x = p >= 1 and 1 or flux.easing[t._ease](p)
-      for k, v in pairs(t.vars) do
-        t.obj[k] = v.start + x * v.diff
-      end
-      if t._onupdate then t._onupdate() end
-      if p >= 1 then
-        flux.remove(self, i)
-        if t._oncomplete then t._oncomplete() end
-        if t.g_tick then t.g_tick.paused = false end
+    if not t.paused then
+      if t._delay > 0 then
+        t._delay = t._delay - deltatime
+      else
+        if not t.inited then
+          flux.clear(self, t.obj, t.vars)
+          t:init()
+        end
+        if t._onstart then
+          t._onstart()
+          t._onstart = nil
+        end
+        t.progress = t.progress + t.rate * deltatime
+        local p = t.progress
+        local x = p >= 1 and 1 or flux.easing[t._ease](p)
+        for k, v in pairs(t.vars) do
+          t.obj[k] = v.start + x * v.diff
+        end
+        if t._onupdate then t._onupdate() end
+        if p >= 1 then
+          flux.remove(self, i)
+          if t._oncomplete then t._oncomplete() end
+          if t.g_tick then t.g_tick.paused = false end
+        end
       end
     end
   end
