@@ -135,7 +135,10 @@ function tween:after(...)
     t = tween.new(...)
   end
   t.parent = self.parent
-  self:oncomplete(function() flux.add(self.parent, t) end)
+  self:oncomplete(function()
+    flux.add(self.parent, t)
+    t.parent:update(self._dt or 0)
+  end)
   return t
 end
 
@@ -169,9 +172,14 @@ function flux:update(deltatime)
   for i = #self, 1, -1 do
     local t = self[i]
     if not t.paused then
+      t._dt = deltatime
       if t._delay > 0 then
         t._delay = t._delay - deltatime
-      else
+        if t._delay <= 0 then
+          t._dt = -t._delay
+        end
+      end
+      if t._dt > 0 then
         if not t.inited then
           flux.clear(self, t.obj, t.vars)
           t:init()
@@ -180,7 +188,8 @@ function flux:update(deltatime)
           t._onstart()
           t._onstart = nil
         end
-        t.progress = t.progress + t.rate * deltatime
+        local remain = (1 - t.progress) / t.rate
+        t.progress = t.progress + t.rate * t._dt
         local p = t.progress
         local x = p >= 1 and 1 or flux.easing[t._ease](p)
         for k, v in pairs(t.vars) do
@@ -188,6 +197,7 @@ function flux:update(deltatime)
         end
         if t._onupdate then t._onupdate() end
         if p >= 1 then
+          t._dt = t._dt - remain
           if t._rewind and (t._rewind == true or t._rewind > 1) then
             t.progress = 0
             t._rewind = (t._rewind == true) or (t._rewind - 1)
