@@ -106,6 +106,7 @@ function tween.new(obj, time, vars)
   self._delay = 0
   self._ease = "quadout"
   self.vars = {}
+  self.way = 1
   for k, v in pairs(vars) do
     if type(v) ~= "number" then
       error("bad value for key '" .. k .. "'; expected number")
@@ -187,8 +188,6 @@ function flux:update(deltatime)
         end
         if t._onupdate then t._onupdate() end
         if p >= 1 then
-          flux.remove(self, i)
-
           if t._rewind and (t._rewind == true or t._rewind > 1) then
             t.progress = 0
             t._rewind = (t._rewind == true) or (t._rewind - 1)
