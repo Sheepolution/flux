@@ -1,6 +1,19 @@
 # flux
 A fast, lightweight tweening library for Lua.
 
+## Fork changes
+
+Changes that I made to this library:
+
+* Add the ability to chain with [tick](https://github.com/sheepolution/tick)
+```lua
+flux.to(t, 4, { x = 10 }):wait(2, function () print("Hello world") end)
+```
+* Add bounce easing (from [this pr](https://github.com/rxi/flux/pull/2)).
+* Add that object is passed to the oncomplete function (from [this pr](https://github.com/rxi/flux/pull/5)).
+* Add `tween:cycle` and `tween:rewind` for repeating and rewinding tweens (from [this pr](https://github.com/rxi/flux/pull/10))
+* Change flux to be more precise (inspired by [this pr](https://github.com/rxi/flux/pull/3))
+
 ## Installation
 The [flux.lua](flux.lua?raw=1) file should be dropped into an existing project
 and required by it.
