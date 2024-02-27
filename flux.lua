@@ -177,43 +177,47 @@ function flux:update(deltatime)
         t._delay = t._delay - deltatime
         if t._delay <= 0 then
           t._dt = -t._delay
+          t._delay = 0
         end
       end
-      if t._dt > 0 then
-        if not t.inited then
-          flux.clear(self, t.obj, t.vars)
-          t:init()
-        end
-        if t._onstart then
-          t._onstart()
-          t._onstart = nil
-        end
-        local remain = (1 - t.progress) / t.rate
-        t.progress = t.progress + t.rate * t._dt
-        local p = t.progress
-        local x = p >= 1 and 1 or flux.easing[t._ease](p)
-        for k, v in pairs(t.vars) do
-          t.obj[k] = v.start + x * v.diff * t.way
-        end
-        if t._onupdate then t._onupdate() end
-        if p >= 1 then
-          t._dt = t._dt - remain
-          if t._rewind and (t._rewind == true or t._rewind > 1) then
-            t.progress = 0
-            t._rewind = (t._rewind == true) or (t._rewind - 1)
-            t.way = t.way * -1
-            for k, v in pairs(t.vars) do
-              t.vars[k].start = t.obj[k]
+
+      if t._delay <= 0 then
+        if t._dt > 0 then
+          if not t.inited then
+            flux.clear(self, t.obj, t.vars)
+            t:init()
+          end
+          if t._onstart then
+            t._onstart()
+            t._onstart = nil
+          end
+          local remain = (1 - t.progress) / t.rate
+          t.progress = t.progress + t.rate * t._dt
+          local p = t.progress
+          local x = p >= 1 and 1 or flux.easing[t._ease](p)
+          for k, v in pairs(t.vars) do
+            t.obj[k] = v.start + x * v.diff * t.way
+          end
+          if t._onupdate then t._onupdate() end
+          if p >= 1 then
+            t._dt = t._dt - remain
+            if t._rewind and (t._rewind == true or t._rewind > 1) then
+              t.progress = 0
+              t._rewind = (t._rewind == true) or (t._rewind - 1)
+              t.way = t.way * -1
+              for k, v in pairs(t.vars) do
+                t.vars[k].start = t.obj[k]
+              end
+              if t._onrewindcomplete then t._onrewindcomplete() end
+            elseif t._cycle and (t._cycle == true or t._cycle > 1) then
+              t.progress = 0
+              t._cycle = (t._cycle == true) or (t._cycle - 1)
+              if t._oncyclecomplete then t._oncyclecomplete() end
+            else
+              flux.remove(self, i)
+              if t._oncomplete then t._oncomplete(t.obj) end
+              if t.g_tick then t.g_tick.paused = false end
             end
-            if t._onrewindcomplete then t._onrewindcomplete() end
-          elseif t._cycle and (t._cycle == true or t._cycle > 1) then
-            t.progress = 0
-            t._cycle = (t._cycle == true) or (t._cycle - 1)
-            if t._oncyclecomplete then t._oncyclecomplete() end
-          else
-            flux.remove(self, i)
-            if t._oncomplete then t._oncomplete(t.obj) end
-            if t.g_tick then t.g_tick.paused = false end
           end
         end
       end
