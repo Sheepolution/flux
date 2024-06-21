@@ -225,6 +225,10 @@ function flux:to(obj, time, vars)
   return flux.add(self, tween.new(obj, time, vars))
 end
 
+function flux:__call(...)
+  return self:to(...)
+end
+
 function flux:update(deltatime)
   for i = #self, 1, -1 do
     update(self, i, deltatime)
