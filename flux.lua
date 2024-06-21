@@ -209,6 +209,14 @@ function tween:wait(t, f)
   return td
 end
 
+function tween:pause()
+  self.paused = true
+end
+
+function tween:resume()
+  self.paused = false
+end
+
 function tween:stop()
   flux.remove(self.parent, self)
 end
