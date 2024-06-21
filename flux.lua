@@ -126,7 +126,7 @@ local function update(tween, i, deltatime)
         for k, v in pairs(t.vars) do
           t.obj[k] = v.start + x * v.diff * t.way
         end
-        if t._onupdate then t._onupdate() end
+        if t._onupdate then t._onupdate(deltatime) end
         if p >= 1 then
           t._dt = t._dt - remain
           if t._rewind and (t._rewind == true or t._rewind > 1) then
