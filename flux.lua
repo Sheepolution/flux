@@ -262,7 +262,7 @@ function flux:remove(x)
     self[x] = self[#self]
     return table.remove(self)
   end
-  for i, v in ipairs(self) do
+  for i, v in pairs(self) do
     if v == x then
       return flux.remove(self, i)
     end
