@@ -97,8 +97,8 @@ tween.oncomplete       = makefsetter("_oncomplete")
 tween.onrewindcomplete = makefsetter("_onrewindcomplete")
 tween.oncyclecomplete  = makefsetter("_oncyclecomplete")
 
-local function update(tween, i, deltatime)
-  local t = tween[i]
+local function update(tween, i, deltatime, t)
+  t = t or tween[i]
   if not t or t.paused then
     return
   end
@@ -117,7 +117,9 @@ local function update(tween, i, deltatime)
     return
   end
   if not t.inited then
-    flux.clear(tween, t.obj, t.vars)
+    if tween then
+      flux.clear(tween, t.obj, t.vars)
+    end
     t:init()
   end
   if t._onstart then
@@ -149,7 +151,10 @@ local function update(tween, i, deltatime)
     t._cycle = (t._cycle == true) or (t._cycle - 1)
     if t._oncyclecomplete then t._oncyclecomplete() end
   else
-    flux.remove(tween, i)
+    if tween then
+      flux.remove(tween, i)
+    end
+    t.finished = true
     if t._oncomplete then t._oncomplete(t.obj) end
     if t.g_tick then t.g_tick.paused = false end
   end
@@ -182,6 +187,10 @@ function tween:init()
     self.vars[k] = { start = x, diff = v - x }
   end
   self.inited = true
+end
+
+function tween:update(dt)
+  update(nil, nil, dt, self)
 end
 
 function tween:after(...)
@@ -221,6 +230,11 @@ function tween:stop()
   flux.remove(self.parent, self)
 end
 
+function tween:detach()
+  flux.remove(self.parent, self)
+  return self
+end
+
 function flux.group()
   return setmetatable({}, flux)
 end
@@ -244,6 +258,7 @@ function flux:update(deltatime)
 end
 
 function flux:clear(obj, vars)
+  ---@diagnostic disable-next-line: param-type-mismatch
   for t in pairs(self[obj]) do
     if t.inited then
       for k in pairs(vars) do t.vars[k] = nil end
@@ -277,7 +292,7 @@ function flux:remove(x)
     self[x] = self[#self]
     return table.remove(self)
   end
-  for i, v in pairs(self) do
+  for i, v in ipairs(self) do
     if v == x then
       return flux.remove(self, i)
     end

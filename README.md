@@ -115,6 +115,9 @@ from the original tween is used.
 flux.to(t, 2, { x = 10 }):after(t, 1, { x = 20 })
 ```
 
+#### :detach()
+Detaches the tween from its parent, allowing you to update the tween individually using `tween:update(dt)`.
+
 ### Stopping a tween
 If you want the ability to stop a tween before it has finished, the tween
 should be assigned to a variable when it is created.
